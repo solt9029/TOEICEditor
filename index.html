@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>TOEIC Editor</title>
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon" href="img/favicon.ico">
+		<script src="js/jquery.js"></script>
+		<script src="js/bootstrap.js"></script>
+		<script src="js/jquery.validationEngine-en.js"></script>
+		<script src="js/jquery.validationEngine.js"></script>
+		<script>
+			function isiOS(){
+				var iOSVersion=false,p=navigator.platform;
+				if(p==='iPad' || p==='iPhone' || p==='iPod' ){
+				    iOSVersion=navigator.appVersion.split(' ')[0] || false;
+				}
+				if(iOSVersion!=false){
+					return true;
+				}
+				return false;
+			}
+		</script>
+		<link href="css/bootstrap.css" rel="stylesheet">
+		<link href="css/validationEngine.jquery.css" rel="stylesheet">
+		<style>
+			header.jumbotron {
+				background: url("img/header.png");
+				background-position: center center;
+				background-size: cover;
+				color: #fff;
+			}
+			
+			footer {
+				text-align: center;
+				padding: 10px;
+				background: #101010;
+			}
+
+			.copyright{
+				color:#fff;
+			}
+
+			.pdf{
+				width: 100%;
+				height:600px;
+			}
+
+			.form{
+				width:100%;
+				height:600px;
+				overflow:scroll;
+			}
+
+			.question{
+				margin-bottom:50px;
+			}
+
+			.render-btn{
+				margin-top:20px;
+			}
+
+			.tweet-btn{	
+				margin-top:20px;
+				margin-bottom:20px;
+			}
+		</style>
+	</head>
+	<body>   
+		<header class="jumbotron">
+			<div class="container">
+				<h1>TOEIC Editor</h1>
+				<p>This is an amazing editor that you can create TOEIC Part 5 questions very easily. Try to create your great TOEIC questions and share them!</p>
+			</div>
+		</header>
+		
+		<div class="container main-content">
+			<div class="row">
+				<div class="col-md-6 image-screen">
+					<h2>Image Screen</h2>
+					<div id="pdf">
+						<object data="pdf/template/template_all.pdf" type="application/pdf" class="pdf">PDF</object>
+						<script>
+							if(isiOS()){
+								document.write('<object data="pdf/template/template_2.pdf" type="application/pdf" class="pdf">PDF</object>');
+								document.write('<object data="pdf/template/template_3.pdf" type="application/pdf" class="pdf">PDF</object>');
+							}
+						</script>
+					</div>
+				</div>
+				<div class="col-md-6 edit-screen">
+					<h2>Edit Screen</h2>
+					<form class="form" id="form">
+						<div class="form-group">
+							<script>
+								for(var i=101; i<=130; i++){
+									document.write('<div class="question">');
+									document.write('<label>Question '+i+'</label>');
+									document.write('<textarea class="form-control validate[maxSize[120]]" name="questions[]" rows="3" placeholder="Question '+i+'" id="question'+i+'"></textarea>');
+									document.write('<input type="text" class="form-control validate[maxSize[35]]" name="A[]" placeholder="A" id="A'+i+'">');
+									document.write('<input type="text" class="form-control validate[maxSize[35]]" name="B[]" placeholder="B" id="B'+i+'">');
+									document.write('<input type="text" class="form-control validate[maxSize[35]]" name="C[]" placeholder="C" id="C'+i+'">');
+									document.write('<input type="text" class="form-control validate[maxSize[35]]" name="D[]" placeholder="D" id="D'+i+'">');
+									document.write('</div>');
+								}
+							</script>
+						</div>
+					</form>
+				</div>	
+			</div>
+			<button type="button" class="btn btn-danger btn-lg btn-block render-btn" id="render">Render</button>
+			<button type="button" class="btn btn-primary btn-lg btn-block tweet-btn" id="tweet">Tweet</button>
+		</div>
+
+		<footer class="container-fluid">
+			<small><a href="http://solt9029.jimdo.com/" class="copyright">Copyright (C) Nakano TOEIC Study Group.</a></small>
+		</footer>
+		
+		<script>
+			$(document).ready(function(){
+				$("#form").validationEngine();
+				$("#render").click(function(){
+					var questions=[],A=[],B=[],C=[],D=[];
+					for(var i=101; i<=130; i++){
+						questions.push($("#question"+i).val());
+						A.push($("#A"+i).val());
+						B.push($("#B"+i).val());
+						C.push($("#C"+i).val());
+						D.push($("#D"+i).val());
+					}
+					var data={
+						questions: questions,
+						A: A,
+						B: B,
+						C: C,
+						D: D,
+						tweet: 0
+					};
+					$.ajax({
+						type:"POST",
+						url:"php/index.php",
+						data:data,
+						success:function(data,dataType){
+							if(isNaN(data)){
+								alert(data);
+							}else{
+								if(isiOS()){
+									var time2=Number(data)+1;
+									var time3=Number(data)+2;
+									$("#pdf").html('<object data="pdf/render/'+data+'.pdf" type="application/pdf" class="pdf">PDF</object>'+'<object data="pdf/render/'+time2+'.pdf" type="application/pdf" class="pdf"></object>'+'<object data="pdf/render/'+time3+'.pdf" type="application/pdf" class="pdf"></object>');
+								}else{
+									$("#pdf").html('<object data="'+"pdf/render/"+data+'.pdf'+'" type="application/pdf" class="pdf"></object>');
+								}
+							}
+						},
+						error:function(XMLHttpRequest,textStatus,errorThrown){
+							alert("Error "+errorThrown);
+						}
+					});
+					return false;
+				});
+
+				$("#tweet").click(function(){
+					var newWin=window.open("","child","width=600, height=300");
+					var questions=[],A=[],B=[],C=[],D=[];
+					for(var i=101; i<=130; i++){
+						questions.push($("#question"+i).val());
+						A.push($("#A"+i).val());
+						B.push($("#B"+i).val());
+						C.push($("#C"+i).val());
+						D.push($("#D"+i).val());
+					}
+					var data={
+						questions: questions,
+						A: A,
+						B: B,
+						C: C,
+						D: D,
+						tweet: 1
+					};
+					$.ajax({
+						type:"POST",
+						url:"php/index.php",
+						data:data,
+						success:function(data,dataType){
+							if(isNaN(data)){
+								alert(data);
+							}else{
+								if(isiOS()){
+									var time2=Number(data)+1;
+									var time3=Number(data)+2;
+									$("#pdf").html('<object data="'+'pdf/render/'+data+'.pdf'+'" type="application/pdf" class="pdf"></object>'+'<object data="'+'pdf/render/'+time2+'.pdf'+'" type="application/pdf" class="pdf"></object>'+'<object data="'+'pdf/render/'+time3+'.pdf'+'" type="application/pdf" class="pdf"></object>');
+								}else{
+									$("#pdf").html('<object data="'+"pdf/render/"+data+'.pdf'+'" type="application/pdf" class="pdf"></object>');
+								}
+								var text="TOEIC問題を作成しました！";
+								var url=location.href+"pdf/tweet/"+data+".pdf";
+								var hashtags="TOEICEditor";
+								newWin.location.href=("https://twitter.com/share?url="+url+"&text="+text+"&hashtags="+hashtags+"&count=none&lang=ja");
+							}
+						},
+						error:function(XMLHttpRequest,textStatus,errorThrown){
+							alert("Error "+errorThrown);
+						}
+					});
+					return false;
+				});
+			});
+
+		</script>
+	</body>
+</html>
