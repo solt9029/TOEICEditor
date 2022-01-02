@@ -1,16 +1,20 @@
-web:
-  build: .
-  ports:
-    - "8011:80"
-  links:
-    - db
-  volumes:
-    - ../:/var/www/html
-    #- ./httpd:/etc/httpd/conf
-db:
-  image: "mysql:5"
-  volumes:
-    - ./mysql:/etc/mysql/conf.d
-  environment:
-    MYSQL_ROOT_PASSWORD: phpapptest
-    MYSQL_DATABASE: mlbma
+version: '2'
+services:
+  web:
+    platform: linux/x86_64
+    build: .
+    ports:
+      - "8011:80"
+    links:
+      - db
+    volumes:
+      - ../:/var/www/html
+      #- ./httpd:/etc/httpd/conf
+  db:
+    platform: linux/x86_64
+    image: "mysql:5"
+    volumes:
+      - ./mysql:/etc/mysql/conf.d
+    environment:
+      MYSQL_ROOT_PASSWORD: phpapptest
+      MYSQL_DATABASE: mlbma
